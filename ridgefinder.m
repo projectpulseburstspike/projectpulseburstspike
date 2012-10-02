@@ -176,3 +176,11 @@ ridge = cell(numRidge,1);
 for i = 1:numRidge
     ridge{i} = find(rmap==i);
 end
+
+function [peaks] = ridgepeaks(cwt)
+numRidge = length(cwt.ridge);
+for i=1:numRidge
+    ridgecfs = cwt.cfs(cwt.ridge{i});
+    peak_index = watershed(ridgecfs); %easy way to find peaks
+    peak_index = find(~peak_index);
+end
