@@ -84,7 +84,7 @@ cwtftOutputTemp = cwtft(signalWin,'scales',wavelet_scales{pow102},'wavelet','mex
 cwtftOutputTemp = cwtftOutputTemp.cfs;
 cwtftOutputTemp2((end-length(wavelet_scales{pow102})+1):end,:) = cwtftOutputTemp;
 cwtftOutputTemp2 = real(cwtftOutputTemp2);
-for i = 1:numScales
+for i = 1:numScales %This for loop normalizes the wavelet coefficients by the scale.
     cwtftOutputTemp2(i,:) = cwtftOutputTemp2(i,:)/sqrt(out.scales(i));
 end
 out.cwt(1).cfs = cwtftOutputTemp2(:,originalSignalIndLeft:(originalSignalIndLeft+numTime-1));
@@ -105,7 +105,7 @@ cwtftOutputTemp = cwtft(signalWin,'scales',wavelet_scales{pow102},'wavelet',{'do
 cwtftOutputTemp = cwtftOutputTemp.cfs;
 cwtftOutputTemp2((end-length(wavelet_scales{pow102})+1):end,:) = cwtftOutputTemp;
 cwtftOutputTemp2 = real(cwtftOutputTemp2);
-for i = 1:numScales
+for i = 1:numScales %This for loop normalizes the wavelet coefficients by the scale.
     cwtftOutputTemp2(i,:) = cwtftOutputTemp2(i,:)/sqrt(out.scales(i));
 end
 out.cwt(2).cfs = cwtftOutputTemp2(:,originalSignalIndLeft:(originalSignalIndLeft+numTime-1));
@@ -126,7 +126,9 @@ cwtftOutputTemp = cwtft(signalWin,'scales',wavelet_scales{pow102},'wavelet','mor
 cwtftOutputTemp = cwtftOutputTemp.cfs;
 cwtftOutputTemp2((end-length(wavelet_scales{pow102})+1):end,:) = cwtftOutputTemp;
 cwtftOutputTemp2 = real(cwtftOutputTemp2);
-for i = 1:numScales
+for i = 1:numScales %This for loop normalizes the wavelet coefficients by the scale.
     cwtftOutputTemp2(i,:) = cwtftOutputTemp2(i,:)/sqrt(out.scales(i));
 end
 out.cwt(3).cfs = cwtftOutputTemp2(:,originalSignalIndLeft:(originalSignalIndLeft+numTime-1));
+
+out = ridgefinder(out);
