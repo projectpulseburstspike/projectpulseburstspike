@@ -25,6 +25,9 @@ function [out] = ridgefinder(myCWT)
 %
 % 1. Find the peaks within each scale
 out = myCWT;
+% determine a threshold that is 3 orders of magnitude less than the range of
+% the signal. 1000 is about 4096 which is the range of a 12-bit camera.
+thresh = (max(out.signal) - min(out.signal))/1000;
 numScales = length(myCWT.scales);
 numWavelets = length(myCWT.cwt);
 numTime = size(myCWT.cwt(1).cfs,2);
@@ -32,12 +35,17 @@ wavelet_peaks = cell(1,numWavelets);
 for j = 1:numWavelets
     wavelet_peaks{j} = cell(1,numScales);
     for k = 1:numScales
-        wavelet_peaks{j}{k} = first_pass_peak_detection(myCWT.cwt(j).cfs(k,:), out.scales(k)*2+1, 0);
+        if mod(out.scales(k),2)
+            windowsize = out.scales(k);
+        else
+            windowsize = out.scales(k)+1;
+        end
+        wavelet_peaks{j}{k} = first_pass_peak_detection(myCWT.cwt(j).cfs(k,:), windowsize, thresh);
     end
 end
 %3b.ii. Find the ridges
 wavelet_peaks_alias = cell(1,numWavelets);
-gap_limit = 2; %connect ridges that are even separated by "gap_limit-1" scales;
+gap_limit = 1; %connect ridges that are even separated by "gap_limit-1" scales;
 %%%%% ridge finding code
 for z = 1:numWavelets
     ridge_map = zeros(numScales,numTime);
@@ -54,8 +62,8 @@ for z = 1:numWavelets
         for j=1:length(wavelet_peaks{z}{i})
             for h=1:gap_limit
                 %Search for peaks within the window size for scale i.
-                low_bnd = wavelet_peaks{z}{i}(j) - 2*myCWT.scales(i-h);
-                up_bnd = wavelet_peaks{z}{i}(j) + 2*myCWT.scales(i-h);
+                low_bnd = wavelet_peaks{z}{i}(j) - myCWT.scales(i-h);
+                up_bnd = wavelet_peaks{z}{i}(j) + myCWT.scales(i-h);
                 low_set = wavelet_peaks{z}{i-h}>low_bnd;
                 up_set = wavelet_peaks{z}{i-h}<up_bnd;
                 %If a peak is found add it to the growing ridge
@@ -103,6 +111,7 @@ for z = 1:numWavelets
     end
     out.cwt(z).ridgemap = ridge_map;
     out.cwt(z).ridge = ridgemap2ridge(ridge_map);
+    out.cwt(z).ridgepeaks = ridgepeaks(out.cwt(z));
 end
 
 function [out]=first_pass_peak_detection(x,winw_size,s)
@@ -173,14 +182,29 @@ out = peak_elected;
 function [ridge] = ridgemap2ridge(rmap)
 numRidge = max(max(rmap));
 ridge = cell(numRidge,1);
+siz = size(rmap);
 for i = 1:numRidge
-    ridge{i} = find(rmap==i);
+    [scale, time] = find(rmap==i);
+    B = sortrows([scale,time],1);
+    ridge{i} = sub2ind(siz,B(:,1),B(:,2));
 end
 
 function [peaks] = ridgepeaks(cwt)
+peaks.scaleindex = [];
+peaks.time = [];
+peaks.cfs = [];
 numRidge = length(cwt.ridge);
+siz = size(cwt.cfs);
 for i=1:numRidge
     ridgecfs = cwt.cfs(cwt.ridge{i});
     peak_index = watershed(ridgecfs); %easy way to find peaks
     peak_index = find(~peak_index);
+    if isempty(peak_index)
+        [~,peak_index] = max(ridgecfs);
+    end
+    [scaleindex,time] = ind2sub(siz,cwt.ridge{i}(peak_index));
+    cfs = cwt.cfs(cwt.ridge{i}(peak_index));
+    peaks.scaleindex = [peaks.scaleindex; scaleindex];
+    peaks.time = [peaks.time; time];
+    peaks.cfs = [peaks.cfs; cfs];
 end
