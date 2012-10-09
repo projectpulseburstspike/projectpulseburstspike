@@ -1,5 +1,5 @@
 function [out] = ridgefinder(myCWT)
-% [] = CWTmodded()
+% [] = ridgefinder()
 % Input:
 % myCWT = the cwt struct output by CWTmodded().
 % myCWT.scales = the wavelet scales used in the transform
@@ -10,7 +10,7 @@ function [out] = ridgefinder(myCWT)
 %
 % Output:
 % out.rigdgmap = a mapping of a ridge label onto the scalogram
-% out.ridge = 
+% out.ridge =
 %
 % Description:
 % The signal that has been transformed into a wavelet domain can be thought
@@ -193,6 +193,7 @@ function [peaks] = ridgepeaks(cwt)
 peaks.scaleindex = [];
 peaks.time = [];
 peaks.cfs = [];
+peaks.ridgeID = [];
 numRidge = length(cwt.ridge);
 siz = size(cwt.cfs);
 for i=1:numRidge
@@ -207,4 +208,6 @@ for i=1:numRidge
     peaks.scaleindex = [peaks.scaleindex; scaleindex];
     peaks.time = [peaks.time; time];
     peaks.cfs = [peaks.cfs; cfs];
+    ridgeID = ones(size(cfs))*i;
+    peaks.ridgeID = [peaks.ridgeID; ridgeID];
 end
