@@ -134,3 +134,4 @@ end
 out.cwt(3).cfs = cwtftOutputTemp2(:,originalSignalIndLeft:(originalSignalIndLeft+numTime-1));
 
 out = ridgefinder(out);
+out = CWTFeatureGen(out);
