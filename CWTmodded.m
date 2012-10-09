@@ -6,6 +6,7 @@ function [out] = CWTmodded(mySignal)
 % Output:
 % out = a struct that contains the wavelet transform(s) and other information.
 % out.scales = the wavelet scales used in the transform
+% out.signal = the input signal
 % out.cwt
 % out.cwt.cfs = the wavelet coefficients from the transform
 % out.cwt.type = a string with the type of wavelet used in the transform
@@ -31,6 +32,7 @@ function [out] = CWTmodded(mySignal)
 % in an exponential scale with uniform spacing. Hopefully this compromise
 % will deliver detail across several orders of magnitude.
 
+out.signal = mySignal;
 % 1. The wavelet transform can be computed using a FFT algorithm. In order to leverage the advantages of the FFT (speed), expand the number of data points to the nearest power of two of 150% of the original signal length. The 150% is needed for effective windowing.
 numTime = length(mySignal);
 fftLen= 2^(ceil(log(numTime*2)/log(2)));
